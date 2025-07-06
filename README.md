@@ -15,7 +15,7 @@ The framework is based on [this template](https://github.com/gorodnitskiy/yet-an
 
 
 ## Results
-Our results can be found [here](https://faubox.rrze.uni-erlangen.de/getlink/fi9RnHmqs8AUdfp5tiNsQX/proposed_results%20Table2). 
+Our results can be found [here](https://faubox.rrze.uni-erlangen.de/getlink/fi5V82Lijua16fSGwE2Wok/waspaa2025). 
 
 ### Notes About Results
    - These results correspond to Table 1 & 2 in the paper. For consiceness, we only show results on the test set
