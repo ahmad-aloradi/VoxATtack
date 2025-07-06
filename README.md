@@ -1,4 +1,4 @@
-# Robust Speaker Recognition Against Adversarial Attacks and Spoofing
+# VoxATack: a Multimodal Attack on Voice Anonymization Systems
 
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
@@ -8,15 +8,19 @@
 
 ## Description
 
-This is the official implementation for the paper: "VoxATack a MultiModal Attack on Voice Anonymization Systems".
+This is the official implementation for the paper: "VoxATack: a Multimodal Attack on Voice Anonymization Systems".
 
 The framework is based on [this template](https://github.com/gorodnitskiy/yet-another-lightning-hydra-template), which is based on
 [PyTorch Lightning](https://github.com/Lightning-AI/lightning) and [Hydra](https://github.com/facebookresearch/hydra). 
 
 
 ## Results
-Our results can be found [IN THIS LINK](https://faubox.rrze.uni-erlangen.de/getlink/fi9RnHmqs8AUdfp5tiNsQX/proposed_results%20Table2)
+Our results can be found [here](https://faubox.rrze.uni-erlangen.de/getlink/fi9RnHmqs8AUdfp5tiNsQX/proposed_results%20Table2). 
 
+### Notes About Results
+   - These results correspond to Table 1 & 2 in the paper. For consiceness, we only show results on the test set
+   - The results show more details than what has been shown in the paper. E.g., DET curves and per-speaker evaluation (only per-gender eval was shown)
+   - We use the normalized scores for all models but `T8-5` 
 
 ## Get started
 
@@ -24,6 +28,10 @@ Our results can be found [IN THIS LINK](https://faubox.rrze.uni-erlangen.de/getl
 # clone template
 git clone https://github.com/ahmad-aloradi/VoxATtack.git
 cd VoxATtack
+
+# create conda environment
+conda create -n voxattack python=3.11 -y
+conda activate voxattack
 
 # install requirements
 pip install -r requirements.txt
@@ -85,17 +93,17 @@ The structure is directly inherited from the used [template](https://github.com/
 ### Downloading Dataset
 We are using the `VoicePrivacy2025` and `Librispeech` datasets. Please download them before hand to use the repo. You need to contact the [VPAC 2025 challenge organizers](https://www.voiceprivacychallenge.org/attacker/) to obtain the dataset. You may optionally download `LibriSpeech` if you need to train or evaluate on the original speech. If you choose not to use it, please remove it from the data configs in `configs/datamodule/datasets/vpc.yaml`.
 
-Once downloaded, we recommend you create a symlink to the data folder (if did not save it there)
+Once downloaded, we use the `data` folder to point to the dataset. You may create a symlink to the data folder (if did not save it there) using:
 ```shell
 ln -s YOUR_DATA_PATH data/.
 ```
-If your data resides elsewhere, you may override the data by 
+If you choose for your data to reside elsewhere, you may override the data by 
 ```shell
 python src/train.py paths.data_dir='PATH_TO_YOUR_DATA'
 ```
 
-### Specfying a Dataset
-By default, all models are used in the training/. This is euivalent to running:
+### Specifying a Dataset {#specifying-dataset}
+By default, all models are used in the training/evaluation. This is equivalent to running:
 ```bash
 python src/train datamodule.models=${datamodule.available_models}
 ```
@@ -220,19 +228,22 @@ python src/eval.py ckpt_path=/path/to/checkpoint.ckpt
 #### Classical Audio Signals Augmentation
 When using the augmentation experiment (`*_aug`), the model will automatically:
 
-1. Download noise dataset from Dropbox if not present
+1. Download noise dataset if not present
 2. Download RIR (Room Impulse Response) dataset if not present
 3. Prepare CSV annotations for both datasets
 4. Apply some or all of the following augmentations during training:
-   - **Noise Addition**: Randomly adds background noise with SNR levels between 0-15 dB
-   - **Reverberation**: Applies room impulse responses to simulate different acoustic environments
+   - **Noise Addition**: Randomly adds background noise with SNR levels between 0-15 dB.
+   - **Reverberation**: Appliebs room impulse responses to simulate different acoustic environments based on real and simulated RIRs.
    - **Frequency Dropping**: Randomly removes frequency bands from the spectrum  (enabled by default ✅)
    - **Chunk Dropping**: Randomly removes temporal segments from the audio (enabled by default ✅)
    - **Speed Perturbation**: Applies speed variations of 90% and 110% to the original speech (enabled by default ✅)
 
-#### Augmentation with Anonymized Speech 
-The configuration for all datasets is defined in `configs/datamodule/datasets/vpc.yaml`. Each anonymization dataset (and the original) contains several keys for specifying the locations of train/dev/test/enrollment data. By default, we provide an example showing how LibriSpeech's training data can be used to augment the dataset.
+For more information, see the different augemtations, please refer to [speechbrain's augmentations](https://speechbrain.readthedocs.io/en/latest/API/speechbrain.augment.html)
 
+#### Augmentation with Anonymized Speech 
+The configuration for all datasets is defined in `configs/datamodule/datasets/vpc.yaml`. Each anonymization dataset (and the original) contains several keys for specifying the locations of train/dev/test/enrollment data. You may choose your dataset as previously described in the [Specifying a Dataset](#specifying-dataset) section.
+
+If you comment out all corresponding paths except the ones to `train` (along with `data_dir` & `metadata`), this will only include the training data of that specific dataset. E.g., the following snippet shows LibriSpeech's training split used as an augmentation:
 ```yaml
    LibriSpeech:
       data_dir: ${datamodule.root_dir}/librispeech
@@ -241,10 +252,7 @@ The configuration for all datasets is defined in `configs/datamodule/datasets/vp
       # # Uncomment when evaluating the clean model only!
       # dev: ${datamodule.available_models.LibriSpeech.metadata}/dev.csv
       # test: ${datamodule.available_models.LibriSpeech.metadata}/test.csv
-      # dev_enrolls: ${datamodule.available_models.LibriSpeech.metadata}/dev_enrolls.csv
-      # test_enrolls: ${datamodule.available_models.LibriSpeech.metadata}/test_enrolls.csv
-      # dev_trials: ${datamodule.available_models.LibriSpeech.metadata}/dev_trials.csv
-      # test_trials: ${datamodule.available_models.LibriSpeech.metadata}/test_trials.csv
+      #...
 ```
 
 ### Logging
@@ -307,5 +315,3 @@ If you use this work in your research, please cite:
    address={Lake Tahoe, CA, USA}
 }
 ```
-
-
