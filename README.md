@@ -18,11 +18,11 @@ The framework is based on [this template](https://github.com/gorodnitskiy/yet-an
 Our results can be found [here](https://faubox.rrze.uni-erlangen.de/getlink/fi5V82Lijua16fSGwE2Wok/waspaa2025). 
 
 ### Notes About Results
-   - These results correspond to Table 1 & 2 in the paper. For consiceness, we only show results on the test set
-   - The results show more details than what has been shown in the paper. E.g., DET curves and per-speaker evaluation (only per-gender eval was shown)
-   - We use the normalized scores for all models but `T8-5` 
+   - These results correspond to Tables 1 & 2 in the paper. For conciseness, we only show results on the test set
+   - The results show more details than what has been shown in the paper. E.g., DET curves and per-speaker evaluation (only per-gender evaluation was shown)
+   - We use the normalized scores for all models except `T8-5` 
 
-## Get started
+## Get Started
 
 ```shell
 # clone template
@@ -87,34 +87,33 @@ The structure is directly inherited from the used [template](https://github.com/
 └── README.md
 ```
 
-
 ## Dataset and Data Preparation
 
-### Downloading Dataset
-We are using the `VoicePrivacy2025` and `Librispeech` datasets. Please download them before hand to use the repo. You need to contact the [VPAC 2025 challenge organizers](https://www.voiceprivacychallenge.org/attacker/) to obtain the dataset. You may optionally download `LibriSpeech` if you need to train or evaluate on the original speech. If you choose not to use it, please remove it from the data configs in `configs/datamodule/datasets/vpc.yaml`.
+### Downloading Datasets
+We use the `VoicePrivacy2025` and `LibriSpeech` datasets. Please download them beforehand to use the repository. Please contact the [VPAC 2025 challenge organizers](https://www.voiceprivacychallenge.org/attacker/) to obtain the attacker challenge dataset. You may optionally download `LibriSpeech` if you need to train or evaluate on the original speech. If you choose not to use it, please remove it from the data configs in `configs/datamodule/datasets/vpc.yaml`.
 
-Once downloaded, we use the `data` folder to point to the dataset. You may create a symlink to the data folder (if did not save it there) using:
+Once downloaded, we use the `data` folder to point to the dataset. You may create a symlink to the data folder (if you did not save it there) using:
 ```shell
 ln -s YOUR_DATA_PATH data/.
 ```
-If you choose for your data to reside elsewhere, you may override the data by 
+If you choose for your data to reside elsewhere, you may override the data path by:
 ```shell
 python src/train.py paths.data_dir='PATH_TO_YOUR_DATA'
 ```
 
 ### Specifying a Dataset {#specifying-dataset}
-By default, all models are used in the training/evaluation. This is equivalent to running:
+By default, all models are used in training/evaluation. This is equivalent to running:
 ```bash
-python src/train datamodule.models=${datamodule.available_models}
+python src/train.py datamodule.models=${datamodule.available_models}
 ```
-You can train/evaluate against a specific anonymization model (e.g. B3) by overriding the key via command line:
+You can train/evaluate against a specific anonymization model (e.g., B3) by overriding the key via command line:
 ```bash
-python src/train datamodule.models={B3: ${datamodule.available_models.B3}}
+python src/train.py datamodule.models={B3: ${datamodule.available_models.B3}}
 ```
 
-You can train/evaluate against multiple anonymization model (e.g. B3 & LibriSpeech) by overriding the key via command line:
+You can train/evaluate against multiple anonymization models (e.g., B3 & LibriSpeech) by overriding the key via command line:
 ```bash
-python src/train datamodule.models={librispeech: ${datamodule.available_models.librispeech}, B3:${datamodule.available_models.B3}}'
+python src/train.py datamodule.models={librispeech: ${datamodule.available_models.librispeech}, B3:${datamodule.available_models.B3}}
 ```
 
 ### Generate Metadata
@@ -122,7 +121,7 @@ python src/train datamodule.models={librispeech: ${datamodule.available_models.l
 
 - **Optional**: To generate equivalent metadata for the original, non-anonymized LibriSpeech dataset (e.g., for ASV splits), run `src/datamodules/components/vpc25/01_OPT_convert_b3_to_librispeech.py`. This script generates metadata based on the `B3` metadata from the previous step.
 
-- When extracting the `T25-1` model's data, a folder name contains a typo. **Please correct this manually**.
+- **Note**: When extracting the `T25-1` model's data, a folder name contains a typo. Please correct this manually.
 
 ## Usage
 
