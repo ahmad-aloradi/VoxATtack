@@ -1,4 +1,4 @@
-# VoxATack: a Multimodal Attack on Voice Anonymization Systems
+# VoxATtack: a Multimodal Attack on Voice Anonymization Systems
 
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
@@ -8,19 +8,25 @@
 
 ## Description
 
-This is the official implementation for the paper: "VoxATack: a Multimodal Attack on Voice Anonymization Systems".
+This is the official implementation for the paper: "VoxATtack: a Multimodal Attack on Voice Anonymization Systems".
 
 The framework is based on [this template](https://github.com/gorodnitskiy/yet-another-lightning-hydra-template), which is based on
 [PyTorch Lightning](https://github.com/Lightning-AI/lightning) and [Hydra](https://github.com/facebookresearch/hydra). 
 
 
-## Results
-Our results can be found [here](https://faubox.rrze.uni-erlangen.de/getlink/fi5V82Lijua16fSGwE2Wok/waspaa2025). 
+## Table of Contents
 
-### Notes About Results
-   - These results correspond to Tables 1 & 2 in the paper. For conciseness, we only show results on the test set
-   - The results show more details than what has been shown in the paper. E.g., DET curves and per-speaker evaluation (only per-gender evaluation was shown)
-   - We use the normalized scores for all models except `T8-5` 
+- [Get Started](#get-started)
+- [Results](#results)
+- [Project Structure](#project-structure)
+- [Dataset and Data Preparation](#dataset-and-data-preparation)
+- [Usage](#usage)
+   - [Training](#training)
+   - [Evaluation](#evaluation)
+   - [Data augmentation](#data-augmentation)
+- [Remarks](#remarks)
+- [Citation](#citation)
+
 
 ## Get Started
 
@@ -37,7 +43,35 @@ conda activate voxattack
 pip install -r requirements.txt
 ```
 
-## Project structure
+
+## Results
+Our results can be found [here](https://faubox.rrze.uni-erlangen.de/getlink/fi5V82Lijua16fSGwE2Wok/waspaa2025). 
+
+### Notes
+   - Currently, we only add results on the test set
+   - The results show more details than what has been shown in the paper. E.g., DET curves and per-speaker evaluation (only per-gender evaluation was shown)
+   - We use the normalized scores for all models except `T8-5` 
+
+### Main results
+Our demonstrate that utilizing text improves the attacks performance against voice anonymization systems. The following are Table 1 and Figure 3 in the paper, which summarize the key findings from our experimental evaluation:
+
+1. Comparison between the proposed VoxATtack and first VoicePrivacy Attacker challenge winners against all anonymization systems. Our model outperforms the winners on all systems but `T12-5` and `T25-1`.
+<p align="center">
+   <img src="assets/Table1.png" alt="Table 1: Performance of several attacker systems" width="400"/>
+</p>
+<p>
+   <em>Table 1: Performance of several attacker systems in EER_avg [%]. `ECAPA_baseline` refers to the official baseline, while `ECAPA_ours` is our audio-only system. Systems A.5 and A.20 together achieve the top scores against every anonymization system in the VPAC data.</em>
+</p>
+
+2. Using SpecAugment and/or anonymized data from other anonymization systems can notably improve the attacks, allowing VoxATtack to surpass the VPAC winner on the two remaining models.
+<p align="center">
+   <img src="assets/Figure3.png" alt="Figure 3: Performance comparison across different anonymization systems" width="400"/>
+</p>
+<p>
+   <em>Figure 3: Effect of different augmentations on VoxATtack against T10-2, T12-5, and T25-1 reported in EER_avg [%].</em>
+</p>
+
+## Project Structure
 The structure is directly inherited from the used [template](https://github.com/gorodnitskiy/yet-another-lightning-hydra-template). It is structured as follows:
 
 
@@ -89,10 +123,10 @@ The structure is directly inherited from the used [template](https://github.com/
 
 ## Dataset and Data Preparation
 
-### Downloading Datasets
+### Downloading datasets
 We use the `VoicePrivacy2025` and `LibriSpeech` datasets. Please download them beforehand to use the repository. Please contact the [VPAC 2025 challenge organizers](https://www.voiceprivacychallenge.org/attacker/) to obtain the attacker challenge dataset. You may optionally download `LibriSpeech` if you need to train or evaluate on the original speech. If you choose not to use it, please remove it from the data configs in `configs/datamodule/datasets/vpc.yaml`.
 
-Once downloaded, we use the `data` folder to point to the dataset. You may create a symlink to the data folder (if you did not save it there) using:
+Once downloaded, we use the `data` folder to point to the dataset. You may, e.g., create a symlink to the data folder:
 ```shell
 ln -s YOUR_DATA_PATH data/.
 ```
@@ -101,7 +135,7 @@ If you choose for your data to reside elsewhere, you may override the data path 
 python src/train.py paths.data_dir='PATH_TO_YOUR_DATA'
 ```
 
-### Specifying a Dataset {#specifying-dataset}
+### Specifying a dataset
 By default, all models are used in training/evaluation. This is equivalent to running:
 ```bash
 python src/train.py datamodule.models=${datamodule.available_models}
@@ -116,7 +150,7 @@ You can train/evaluate against multiple anonymization models (e.g., B3 & LibriSp
 python src/train.py datamodule.models={librispeech: ${datamodule.available_models.librispeech}, B3:${datamodule.available_models.B3}}
 ```
 
-### Generate Metadata
+### Generate metadata
 - Execute `scripts/datasets/prep_vpc.sh` to generate metadata for the anonymization models `B3`, `B4`, `B5`, `T8-5`, `T10-2`, and `T25-1`. Upon successful execution, this script creates `metadata` folders stored in `vpc2025_official/ANON_MODEL/data/metadata`.
 
 - **Optional**: To generate equivalent metadata for the original, non-anonymized LibriSpeech dataset (e.g., for ASV splits), run `src/datamodules/components/vpc25/01_OPT_convert_b3_to_librispeech.py`. This script generates metadata based on the `B3` metadata from the previous step.
@@ -129,7 +163,7 @@ python src/train.py datamodule.models={librispeech: ${datamodule.available_model
 
 The framework uses Hydra for configuration management. You can train models using different experiment configurations:
 
-#### Basic Training
+#### Basic training
 ```bash
 # Train with default configuration
 python src/train.py
@@ -138,7 +172,7 @@ python src/train.py
 python src/train.py trainer.max_epochs=50 datamodule.loaders.train.batch_size=32
 ```
 
-#### Available VPC Experiments (Recommended)
+#### Available experiments (recommended)
 
 1. **VoxATtack (multimodal attack)**
 
@@ -148,26 +182,49 @@ python src/train.py trainer.max_epochs=50 datamodule.loaders.train.batch_size=32
    - Uses multimodal approach with audio and text features
    - Includes ensemble, fusion, audio, and text loss components
 
-2. **VoxATtack With Data Augmentation (SpeechAugment)**
+2. **VoxATtack with data augmentation (SpeechAugment)**
    ```bash
    python src/train.py experiment=vpc/voxattack_aug
    ```
    - Includes noise addition, reverberation, frequency dropping, chunk dropping, and speed perturbation
    - Automatically downloads and prepares noise and RIR datasets
 
-3. **ECAPA_ours (Audio-Only Model)**
+3. **ECAPA_ours (audio-only model)**
    ```bash
    python src/train.py experiment=vpc/ecapa_ours_base
    ```
    - Audio-only approach using robust audio model
    - Using a single AAM loss term
 
-4. **ECAPA_ours with Data Augmentation (SpeechAugment)**
+4. **ECAPA_ours with data augmentation (SpeechAugment)**
    ```bash
    python src/train.py experiment=vpc/ecapa_ours_aug
    ```
    - Audio-only approach using robust audio model
    - Simplified loss function without multimodal components
+
+#### Logging
+
+The framework supports multiple logging backends:
+
+```bash
+# Use WandB (TensorBoard used by default)
+python src/train.py logger=wandb
+
+# Use multiple loggers --> define which loggers configs/logger/many_loggers.yaml
+python src/train.py logger=many_loggers
+```
+
+#### GPU/CPU training
+
+```bash
+# Train on GPU (default)
+python src/train.py trainer=gpu
+
+# Multi-GPU training
+python src/train.py trainer=ddp
+```
+
 
 ---
 
@@ -180,7 +237,7 @@ python src/eval.py ckpt_path=/path/to/checkpoint.ckpt
 ```
 
 
-#### Detailed Evaluation (Recommended)
+#### Detailed Evaluation (recommended)
 
 - After training completion, your experiment directory will contain the following **Key Output Directories:**
    - `valid_artifacts/`: Validation evaluation results
@@ -205,26 +262,20 @@ python src/eval.py ckpt_path=/path/to/checkpoint.ckpt
 - Use `notebooks/test_results_analysis.ipynb` for comprehensive evaluation analysis. Configure the following variables:
 
    ```python
-   # Required configuration
    MODELS_PATH = "PATH_TO_YOUR_MODELS"  # Update to your experiments directory
-
-   # Evaluation mode
    EVAL_MODE = "EVAL_ALL"  # Options: "SINGLE" or "EVAL_ALL"
-
-   # Single experiment evaluation (when EVAL_MODE = "SINGLE")
-   SINGLE_EXPERIMENT = 'voxattack_base-B3-max_dur10-bs32'
-
-   # Batch evaluation (when EVAL_MODE = "EVAL_ALL") 
-   EXPERIMENT_PATTERN = '*'  # Regex pattern to select experiments
-
-   # Data split selection
    EVAL_TEST = True  # True for test data, False for validation data
+
+   # Single experiment eval (when EVAL_MODE = "SINGLE")
+   SINGLE_EXPERIMENT = 'voxattack_base-B3-max_dur10-bs32'
+   # Batch eval (when EVAL_MODE = "EVAL_ALL") 
+   EXPERIMENT_REGEX = r'.*'  # Regex pattern to select experiments
    ```
 
 ---
-### Data Augmentation Configuration
+### Data augmentation
 
-#### Classical Audio Signals Augmentation
+#### Classical audio signals augmentation
 When using the augmentation experiment (`*_aug`), the model will automatically:
 
 1. Download noise dataset if not present
@@ -239,9 +290,8 @@ When using the augmentation experiment (`*_aug`), the model will automatically:
 
 For more information, see the different augemtations, please refer to [speechbrain's augmentations](https://speechbrain.readthedocs.io/en/latest/API/speechbrain.augment.html)
 
-#### Augmentation with Anonymized Speech 
-The configuration for all datasets is defined in `configs/datamodule/datasets/vpc.yaml`. Each anonymization dataset (and the original) contains several keys for specifying the locations of train/dev/test/enrollment data. You may choose your dataset as previously described in the [Specifying a Dataset](#specifying-dataset) section.
-
+#### Augmentation with anonymized speech 
+The configuration for all datasets is defined in `configs/datamodule/datasets/vpc.yaml`. Each anonymization dataset (and the original) contains several keys for specifying the locations of train/dev/test/enrollment data. You may choose your dataset as previously described in the [Specifying a Dataset](#specifying-a-dataset) section.
 If you comment out all corresponding paths except the ones to `train` (along with `data_dir` & `metadata`), this will only include the training data of that specific dataset. E.g., the following snippet shows LibriSpeech's training split used as an augmentation:
 ```yaml
    LibriSpeech:
@@ -254,52 +304,32 @@ If you comment out all corresponding paths except the ones to `train` (along wit
       #...
 ```
 
-### Logging
-
-The framework supports multiple logging backends:
-
-```bash
-# Use WandB (TensorBoard used by default)
-python src/train.py logger=wandb
-
-# Use multiple loggers --> define which loggers configs/logger/many_loggers.yaml
-python src/train.py logger=many_loggers
-```
-
-### GPU/CPU Training
-
-```bash
-# Train on GPU (default)
-python src/train.py trainer=gpu
-
-# Multi-GPU training
-python src/train.py trainer=ddp
-```
 
 ## Remarks
 
-### Known Issues
-1. **VoicePrivacy2025 dataset**: When extracting the `T25-1` model's data, a folder name contains a typo. Please correct this manually.
-2. **LibriSpeech dataset**: Line 60 in `SPEAKERS.TXT` previously caused parsing issues when loading as CSV with `sep='|'`. This is now handled automatically.
+1. **Known issues**
+   - **VoicePrivacy2025 dataset**: When extracting the `T25-1` model's data, a folder name contains a typo. Please correct this manually.
+   - **LibriSpeech dataset**: Line 60 in `SPEAKERS.TXT` previously caused parsing issues when loading as CSV with `sep='|'`. This is now handled automatically.
 
-### Troubleshooting
-Use debug configurations if needed
 
-```bash
-# Fast development run with limited data
-python src/train.py debug=default
+2. **Troubleshooting**
 
-# Overfit on small batch for debugging
-python src/train.py debug=overfit
-```
+   Use debug configurations if needed
+   ```bash
+   # Fast development run with limited data
+   python src/train.py debug=default
 
-### Validation Loop
-Currently, the validation data does not perform score normalization when computing the scores. This means that:
-1. The best model is saved based on the raw scores, not the normalized scores. 
-2. The scores saved in `valid_best_scores.csv` and `valid_best_metrics.json` (under `valid_artifacts`) are not based on the normalized scores.
+   # Overfit on small batch for debugging
+   python src/train.py debug=overfit
+   ```
 
-For the purpose of evaluation, `notebooks/test_results_analysis.ipynb` generates the raw and normalized scores for each model on both dev and test. 
+3. **Experiment's directory**
 
+   - The validation data does not perform AS-norm when computing the scores. This means that:
+      1. The best model is saved based on the raw scores, not the normalized scores. 
+      2. The scores saved in `valid_best_scores.csv` and `valid_best_metrics.json` (under `valid_artifacts`) are not normalized scores.
+
+   - For the purpose of evaluation, `notebooks/test_results_analysis.ipynb` generates the raw and normalized scores for each model on both dev and test. 
 
 ## Citation
 
@@ -307,7 +337,7 @@ If you use this work in your research, please cite:
 
 ```bibtex
 @inproceedings{aloradi2025voxattack,
-   title={VoxATack: a MultiModal Attack on Voice Anonymization Systems},
+   title={VoxATtack: a MultiModal Attack on Voice Anonymization Systems},
    author={Aloradi, Ahmad and Gaznepoglu, Ünal Ege and Habets, Emanuël A.P. and Tenbrinck, Daniel},
    booktitle={IEEE Workshop on Applications of Signal Processing to Audio and Acoustics (WASPAA)},
    year={2025},
